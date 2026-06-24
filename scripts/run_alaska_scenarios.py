@@ -41,6 +41,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--success", type=int, default=50,
                     help="successful simulations per sample (default 50)")
+    ap.add_argument("--max-iter", type=int, default=20000,
+                    help="iteration ceiling per sample (default 20000)")
+    ap.add_argument("--zerohits", type=int, default=5000,
+                    help="give up on a sample after this many zero-success iters")
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--out", default="reference/alaska_results_python.csv")
     args = ap.parse_args()
@@ -48,7 +52,7 @@ def main():
     rows = []
     for name in SCENARIOS:
         res, ctx = run(name, UE, RD, seed=args.seed, max_success=args.success,
-                       max_iter=200000, max_zerohits=10000)
+                       max_iter=args.max_iter, max_zerohits=args.zerohits)
         S = ctx["summary"]
         p = ctx["params"]
         n_ok = sum(1 for v in S.successes.values() if v > 0)
