@@ -79,6 +79,28 @@ degeneracy. This cannot be removed by more Monte Carlo sampling and would
 require replicating MATLAB's exact optimizer to eliminate.
 
 Note: the **ClCritical (cyclic-chloride) correction is *not* involved** here.
+
+### Initial-condition experiment (mldivide vs minimum-norm)
+
+We tested whether the residual comes from the linear-solve initial condition fed
+to the optimizer. Scenario 2's system is **underdetermined** (9 observations,
+10 end-members), so MATLAB's `A\b` returns a *basic* solution (some end-members
+exactly zero) while `numpy.linalg.lstsq` returns the *minimum-norm* solution.
+`scripts/ab_initial_condition.py` runs both as the optimizer's start and scores
+each against Table S2:
+
+- **Scenario 1** (square 9×9): the two are *identical* (for a square full-rank
+  system `mldivide` == `lstsq`), so the initial condition cannot explain its
+  residual.
+- **Scenario 2** (9×10): the literal basic solution is **far worse** — it zeros
+  carbonate at the start and the optimizer settles at a wrong minimum, blowing
+  the worst Table S2 deviation from **3.4 to 42 points** (DIC carbonate 72→40%).
+
+So MATLAB's *effective* behaviour matches the **minimum-norm** solution, which is
+what this port uses. The ~3-point carbonate/silicate Ca-Mg residual is therefore
+**not** an initial-condition artifact; it is intrinsic to the optimizer
+(SLSQP vs `fmincon`) and end-member sampling on the one under-determined axis,
+and cannot be reduced by changing the solve or adding Monte Carlo samples.
 All five Alaska scenarios set `PrecProcessing = 'EndMember'` (verified in
 `MEANDIR_FindScenarioParameters.m`), so the published inversion treats
 precipitation as an ordinary end-member and never invokes

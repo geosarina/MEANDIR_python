@@ -13,7 +13,40 @@ from __future__ import annotations
 import math
 
 import numpy as np
+import scipy.linalg as sla
 from scipy.optimize import nnls, minimize
+
+# Initial-condition strategy for the mldivide-family solvers:
+#   "minnorm"-> numpy.linalg.lstsq (minimum-2-norm solution)
+#   "basic"  -> literal MATLAB backslash semantics (column-pivoted QR; for an
+#               underdetermined system a basic solution with <=rank nonzeros)
+#
+# These differ only for the underdetermined scenarios (more end-members than
+# observations, e.g. scenario 2 at 9x10). Empirically (scripts/ab_initial_condition.py)
+# "minnorm" reproduces the published Table S2 contributions far better: the
+# literal "basic" solution zeros a structural end-member (e.g. carbonate) at the
+# start and drives the optimizer to a wrong minimum (worst Table S2 deviation
+# 3.4 -> 42 points on scenario 2). MATLAB's effective behaviour matches the
+# minimum-norm solution here, so "minnorm" is the default; "basic" is retained
+# for reproducibility of that finding.
+MLDIVIDE_INITIAL_CONDITION = "minnorm"
+
+
+def _mldivide(A, b):
+    """Reproduce MATLAB ``A\\b`` for the inversion's possibly-underdetermined
+    linear system. Square/overdetermined full-rank -> ordinary least squares;
+    underdetermined or rank-deficient -> a basic solution via column-pivoted QR
+    (at most rank(A) nonzero entries), as MATLAB's backslash returns."""
+    m, n = A.shape
+    rank = np.linalg.matrix_rank(A)
+    if rank == n and m >= n:
+        x, *_ = np.linalg.lstsq(A, b, rcond=None)
+        return x
+    Q, R, piv = sla.qr(A, mode="economic", pivoting=True)
+    x = np.zeros(n)
+    x[piv[:rank]] = sla.solve_triangular(R[:rank, :rank], Q[:, :rank].T @ b)
+    return x
+
 
 
 def cost_function(X0, em_inst0, em_inst_r_base, river_col0, river_col_r,
@@ -55,8 +88,10 @@ def cost_function(X0, em_inst0, em_inst_r_base, river_col0, river_col_r,
 
 def _initial_condition(solver, initial, river_col_r):
     if solver in ("mldivide", "mldivide_optimize"):
-        X0, *_ = np.linalg.lstsq(initial, river_col_r, rcond=None)
-        return X0
+        if MLDIVIDE_INITIAL_CONDITION == "minnorm":
+            X0, *_ = np.linalg.lstsq(initial, river_col_r, rcond=None)
+            return X0
+        return _mldivide(initial, river_col_r)
     if solver in ("lsqnonneg", "lsqnonneg_optimize"):
         X0, _ = nnls(initial, river_col_r)
         return X0
