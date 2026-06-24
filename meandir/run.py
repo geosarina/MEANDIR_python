@@ -18,6 +18,7 @@ from .io.river_data import read_river_observations, build_model_variables
 from .engine.endmembers import read_endmembers
 from .engine.distributions import make_em_distributions
 from .engine.master import run_scenario
+from .engine.results import aggregate_results
 
 
 def run(scenario_name: str, user_entries_path, river_data_path, *,
@@ -54,8 +55,11 @@ def run(scenario_name: str, user_entries_path, river_data_path, *,
         max_iter=max_iter, max_success=max_success, max_zerohits=max_zerohits,
         progress=progress)
 
+    summary = aggregate_results(results, delta2r)
+
     context = {
         "params": params, "river": river, "em_data": em_data,
         "dists": dists, "delta2r": delta2r, "functional": functional,
+        "summary": summary,
     }
     return results, context
