@@ -43,6 +43,7 @@ class RiverResults:
     reconstructed: dict = field(default_factory=dict)   # obs -> stat -> array(n_samples)
     excess_so4: dict = field(default_factory=dict)
     misfit_model: dict = field(default_factory=dict)    # sample -> array(n instances)
+    rzcwy: dict = field(default_factory=dict)           # V -> gross/net -> scaled/unscaled -> stat -> array
 
 
 def aggregate_results(scenario_results, delta2r):

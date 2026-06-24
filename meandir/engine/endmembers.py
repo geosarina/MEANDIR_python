@@ -59,6 +59,12 @@ class EMData:
     def has_numerator(self, numerator):
         return numerator in self.disttype
 
+    def all_have(self, ems, numerator):
+        """True if every end-member carries a distribution for ``numerator``
+        (port of the EMHaveSO4 / EMHaved34S checks in FindScenarioParameters)."""
+        natures = ("Min", "Max", "Men", "Std", "Mod")
+        return all(any(self.has(e, numerator, n) for n in natures) for e in ems)
+
 
 def _is_number(x) -> bool:
     return isinstance(x, (int, float)) and not isinstance(x, bool)

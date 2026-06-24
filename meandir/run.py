@@ -19,6 +19,7 @@ from .engine.endmembers import read_endmembers
 from .engine.distributions import make_em_distributions
 from .engine.master import run_scenario
 from .engine.results import aggregate_results
+from .engine.rzcwy import calculate_rzcwy
 
 
 def run(scenario_name: str, user_entries_path, river_data_path, *,
@@ -42,6 +43,7 @@ def run(scenario_name: str, user_entries_path, river_data_path, *,
 
     em_table = load_endmember_group(user_entries_path, params.EMdatasource)
     em_data = read_endmembers(em_table)
+    params.EMHaveSO4 = em_data.all_have(params.EMList0, "SO4")
     dists = make_em_distributions(params, em_data, delta2r)
 
     if samples is not None:
@@ -56,6 +58,7 @@ def run(scenario_name: str, user_entries_path, river_data_path, *,
         progress=progress)
 
     summary = aggregate_results(results, delta2r)
+    summary.rzcwy = calculate_rzcwy(results, conc2equi)
 
     context = {
         "params": params, "river": river, "em_data": em_data,

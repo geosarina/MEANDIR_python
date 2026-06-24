@@ -76,6 +76,12 @@ class ScenarioParameters:
     C_Numerator_EMList: list = field(default_factory=list)
     RZC_Denominator_EMList: list = field(default_factory=list)
     RZC_Denominator_IonList: list = field(default_factory=list)
+    # derived Z-numerator mode booleans + whether the EMs carry SO4 ratios
+    ZfromEM: bool = False
+    ZfromSO4excess: bool = False
+    ZfromriverSO4: bool = False
+    Znotcalculated: bool = False
+    EMHaveSO4: bool = False
 
     # --- group 6: degassing DIC contribution ---
     ResetDegasDICContribution: int = 0
@@ -136,6 +142,13 @@ def derive(params: ScenarioParameters, charges: dict[str, str]) -> ScenarioParam
         params.MinFractionalContribution0 = list(params.MinFractionalContribution)
     if not params.MaxFractionalContribution0:
         params.MaxFractionalContribution0 = list(params.MaxFractionalContribution)
+
+    # Z-numerator mode booleans (test 16 of MEANDIR_FindScenarioParameters).
+    ztype = params.Z_NumeratorType[0] if params.Z_NumeratorType else None
+    params.ZfromEM = ztype == "ZfromEM"
+    params.ZfromSO4excess = ztype == "ZfromSO4excess"
+    params.ZfromriverSO4 = ztype == "ZfromriverSO4"
+    params.Znotcalculated = ztype == "Znotcalculated"
     return params
 
 

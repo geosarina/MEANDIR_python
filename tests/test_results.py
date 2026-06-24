@@ -44,3 +44,20 @@ def test_reconstructed_isotopes_track_observations(summary):
         # reconstructed delta values land within the inversion window of the obs
         assert abs(S.reconstructed["d13C"]["median"][i] - mv["d13C"][i]) < 2.0
         assert abs(S.reconstructed["d34S"]["median"][i] - mv["d34S"][i]) < 3.0
+
+
+def test_rzcwy_sane_and_net_equals_gross(summary):
+    S, ctx = summary
+    Z = S.rzcwy
+    assert set("RZCWY").issubset(Z)
+    i = next(k for k, v in S.successes.items() if v > 0)
+    # carbonate-dominated catchment: most cation weathering is carbonate (R high)
+    assert 0.0 <= Z["R"]["gross"]["unscaled"]["median"][i] <= 1.5
+    # most river SO4 is pyrite-derived in this scenario
+    assert Z["Y"]["gross"]["unscaled"]["median"][i] > 0.3
+    # no sinks in the Alaska scenarios -> net recycling factor is 1
+    for V in "RZCWY":
+        g = Z[V]["gross"]["unscaled"]["median"][i]
+        nt = Z[V]["net"]["unscaled"]["median"][i]
+        if not (np.isnan(g) or np.isnan(nt)):
+            assert abs(g - nt) < 1e-9
