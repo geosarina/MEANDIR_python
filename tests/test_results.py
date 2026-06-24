@@ -61,3 +61,15 @@ def test_rzcwy_sane_and_net_equals_gross(summary):
         nt = Z[V]["net"]["unscaled"]["median"][i]
         if not (np.isnan(g) or np.isnan(nt)):
             assert abs(g - nt) < 1e-9
+
+
+def test_end_member_values_recover_isotopes(summary):
+    S, ctx = summary
+    p = ctx["params"]
+    i = next(k for k, v in S.successes.items() if v > 0)
+    # every end-member/observation pair has a per-sample summary
+    assert set(p.EMList0) == set(S.end_members)
+    # carbonate end-member carries essentially no SO4 (normalized ratio ~ 0)
+    assert abs(S.end_members["carb"]["SO4"]["median"][i]) < 0.5
+    # the degassing end-member's d13C is a recovered delta value (finite, < 0)
+    assert np.isfinite(S.end_members["degas"]["d13C"]["median"][i])

@@ -44,6 +44,7 @@ class RiverResults:
     excess_so4: dict = field(default_factory=dict)
     misfit_model: dict = field(default_factory=dict)    # sample -> array(n instances)
     rzcwy: dict = field(default_factory=dict)           # V -> gross/net -> scaled/unscaled -> stat -> array
+    end_members: dict = field(default_factory=dict)     # em -> obs -> stat -> array(n_samples)
 
 
 def aggregate_results(scenario_results, delta2r):
@@ -110,7 +111,34 @@ def aggregate_results(scenario_results, delta2r):
                 rr.reconstructed[o][k][i] = st[k]
 
     _excess_so4(rr, scenario_results)
+    _end_member_values(rr, scenario_results, delta2r)
     return rr
+
+
+def _end_member_values(rr, scenario_results, delta2r):
+    """CalculateEndMemberValues — inversion-constrained ratio of each ion/isotope
+    in each end-member, per sample (from the fractionation-updated EM matrix)."""
+    p = scenario_results.params
+    obs = p.ObsList
+    ems = p.EMList0
+    rr.end_members = {e: {o: {st: np.full(rr.n_samples, np.nan) for st in _STATS}
+                          for o in obs} for e in ems}
+    for i in rr.sample_indices:
+        succ = scenario_results.sample_results[i]
+        if not succ:
+            continue
+        em_stack = np.stack([s["em_updated"] for s in succ], axis=2)  # (nOL,nEM,ninst)
+        for j, e in enumerate(ems):
+            for k, o in enumerate(obs):
+                vals = em_stack[k, j, :]
+                if o in ISOTOPE_VARIABLES:
+                    ion = isotope_ion(o, p.carbonisotopematch)
+                    vals = vals / em_stack[obs.index(ion), j, :]
+                    if o in p.ConvertDelta2RList:
+                        vals = (vals / delta2r.factor(o) - 1) * 1000
+                st = _summ(vals, axis=0)
+                for stat in _STATS:
+                    rr.end_members[e][o][stat][i] = st[stat]
 
 
 def _excess_so4(rr, scenario_results):
