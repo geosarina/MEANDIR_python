@@ -41,6 +41,26 @@ def load_conc2equi(path: str | Path) -> dict[str, float]:
     return out
 
 
+# Map the spreadsheet "Charge" words to MEANDIR's single-character codes.
+_CHARGE_CODE = {"positive": "+", "negative": "-", "neutral": "0"}
+
+
+def load_charges(path: str | Path) -> dict[str, str]:
+    """Return ``{variable: '+'/'-'/'0'}`` from the conc2equi sheet's Charge column."""
+    grid = read_grid(path, "MEANDIR_conc2equi")
+    header = grid[0]
+    ci_var = header_index(header, "Variable")
+    ci_chg = header_index(header, "Charge")
+    out: dict[str, str] = {}
+    for row in grid[1:]:
+        var = row[ci_var] if ci_var < len(row) else None
+        chg = row[ci_chg] if ci_chg < len(row) else None
+        if var is None:
+            continue
+        out[str(var)] = _CHARGE_CODE.get(str(chg), "NaN")
+    return out
+
+
 # ---------------------------------------------------------------------------
 # delta -> ratio conversion
 # ---------------------------------------------------------------------------
