@@ -14,7 +14,13 @@ import math
 
 import numpy as np
 import scipy.linalg as sla
-from scipy.optimize import nnls, minimize
+from scipy.optimize import nnls, minimize, Bounds
+
+# Bounded optimizer for the *_optimize solvers, in place of MATLAB fmincon.
+#   "SLSQP"        -> active-set SQP (fast; the default here)
+#   "trust-constr" -> interior-point-style method, closer to fmincon's default
+# Toggleable so we can A/B which better matches the published results.
+OPTIMIZER_METHOD = "SLSQP"
 
 # Initial-condition strategy for the mldivide-family solvers:
 #   "minnorm"-> numpy.linalg.lstsq (minimum-2-norm solution)
@@ -132,13 +138,23 @@ def invert_active_simulation(solver, em_inst0, em_inst_r, river_col0,
 
     optimize = solver in ("optimize", "mldivide_optimize", "lsqnonneg_optimize")
     if optimize and not np.any(np.isnan(X0)):
-        res = minimize(
-            cost_function, X0,
-            args=(em_inst0, em_inst_r, river_col0, river_col_r, solvecf_r,
-                  abspos_r, relpos_r, weighting_r, frac, xdirect, sources),
-            method="SLSQP", bounds=_bounds(minfrac_r, maxfrac_r),
-            options={"maxiter": 1000 * nEM, "ftol": 1e-10},
-        )
+        args = (em_inst0, em_inst_r, river_col0, river_col_r, solvecf_r,
+                abspos_r, relpos_r, weighting_r, frac, xdirect, sources)
+        bounds = _bounds(minfrac_r, maxfrac_r)
+        if OPTIMIZER_METHOD == "trust-constr":
+            lb = np.array([b[0] if b[0] is not None else -np.inf for b in bounds])
+            ub = np.array([b[1] if b[1] is not None else np.inf for b in bounds])
+            res = minimize(
+                cost_function, X0, args=args, method="trust-constr",
+                bounds=Bounds(lb, ub),
+                options={"maxiter": 1000 * nEM, "gtol": 1e-10, "xtol": 1e-12},
+            )
+        else:
+            res = minimize(
+                cost_function, X0, args=args,
+                method="SLSQP", bounds=bounds,
+                options={"maxiter": 1000 * nEM, "ftol": 1e-10},
+            )
         Xtemp = res.x
         functioncost = res.fun
     else:
