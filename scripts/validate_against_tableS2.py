@@ -65,6 +65,10 @@ def main():
         for ion, rows in PUBLISHED.items():
             for paper_em, em, pub in rows:
                 target = pub.get(sc)
+                if em not in S.fraction[ion]:
+                    # end-member absent in this scenario (e.g. degassing in sc1)
+                    print(f"{ion:4s} {paper_em:16s} {'—':>10s} {'(absent)':>9s}")
+                    continue
                 med = S.fraction[ion][em]["median"]
                 val = float(np.nanmean(med)) * 100 if np.any(~np.isnan(med)) else float("nan")
                 if target is None:
