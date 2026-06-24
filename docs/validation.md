@@ -54,9 +54,14 @@ and silicate both source Ca and Mg), so it is the most sensitive to:
    sample; the paper uses 200. The "mean of median" carries sampling noise that
    shrinks with more successes.
 2. **Optimizer differences** — SciPy SLSQP here vs MATLAB `fmincon`.
-3. **The ClCritical (cyclic-chloride) correction**, not yet ported. Its effect
-   here appears small: Cl → precipitation reproduces at 100% and the precipitation
-   contributions to other ions match to 0.0–0.1 points.
+
+Note: the **ClCritical (cyclic-chloride) correction is *not* involved** here.
+All five Alaska scenarios set `PrecProcessing = 'EndMember'` (verified in
+`MEANDIR_FindScenarioParameters.m`), so the published inversion treats
+precipitation as an ordinary end-member and never invokes
+`MEANDIR_ClCriticalCorrection`. The port matches that: ClCritical is implemented
+(`engine/clcritical.py`) but gated behind `PrecProcessing == 'ClCrit'` and stays
+inert for these scenarios.
 
 Cl, Na, K, SO₄, and the DIC carbon split — the quantities the paper's
 conclusions rest on — reproduce to within ~1–2 points, so the port is faithful

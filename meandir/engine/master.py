@@ -18,6 +18,7 @@ from .sampling import pull_end_member_ratios
 from .fractionation import find_fractionation_pairs
 from .inversion import invert_active_simulation
 from .evaluate import evaluate_inversion_instance
+from .clcritical import cl_critical_correction, SKIP_SAMPLE
 
 
 @dataclass
@@ -76,14 +77,35 @@ def run_scenario(params, river, em_data, dists, delta2r, functional_mask, rng,
                     break
                 continue
 
-            xdirect = np.full(len(ems), np.nan)
+            # ClCritical (cyclic-chloride) correction. Inert unless the scenario
+            # sets PrecProcessing == 'ClCrit'; the Alaska scenarios use
+            # 'EndMember', so this branch is skipped for them.
+            if params.PrecProcessing == "ClCrit" and "prec" in ems and "Cl" in obs:
+                cc = cl_critical_correction(
+                    params, river, inv, em_inst0, rc0, i, rng, em_data, dists,
+                    delta2r, params.MinFractionalContribution0)
+                if cc is SKIP_SAMPLE:
+                    break                       # ClCrit is NaN for this sample
+                if cc is None:
+                    if len(success) == 0 and it >= max_zerohits:
+                        break
+                    continue                    # unrealizable instance; retry
+                rc_corr, em_inst, em_inst0, xdirect, ems_list, distcode_use = cc
+            else:
+                rc_corr = rc0
+                em_inst = em_inst0
+                ems_list = ems
+                distcode_use = dists.distcode
+                xdirect = np.full(len(ems), np.nan)
+
             rc_r, em_r, ems_r, obs_r, xdirect, distcode_r = prepare_updated_data(
-                xdirect, rc0, obs, ems, ems, relpos, em_inst0, solver, dists.distcode)
+                xdirect, rc_corr, obs, ems_list, ems, relpos, em_inst, solver,
+                distcode_use)
             frac = find_fractionation_pairs(
                 dists.distcode, distcode_r, obs, obs_r, ems, ems_r,
                 params.carbonisotopematch)
 
-            minf, maxf = _reset_degas(params, rc0)
+            minf, maxf = _reset_degas(params, rc_corr)
             nanmask = np.isnan(xdirect)
             minf_r = minf[nanmask]
             maxf_r = maxf[nanmask]
