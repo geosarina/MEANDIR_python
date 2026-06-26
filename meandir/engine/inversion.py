@@ -14,13 +14,37 @@ import math
 
 import numpy as np
 import scipy.linalg as sla
-from scipy.optimize import nnls, minimize, Bounds
+from scipy.optimize import nnls, minimize, Bounds, lsq_linear
 
 # Bounded optimizer for the *_optimize solvers, in place of MATLAB fmincon.
 #   "SLSQP"        -> active-set SQP (fast; the default here)
 #   "trust-constr" -> interior-point-style method, closer to fmincon's default
 # Toggleable so we can A/B which better matches the published results.
 OPTIMIZER_METHOD = "SLSQP"
+
+# Experimental solver modes for the convex (no-fractionation) case:
+#   "default"    -> the OPTIMIZER_METHOD nonlinear optimizer
+#   "lsq_linear" -> exact bounded least-squares (true convex minimum, fast)
+#   "x0clip"     -> X0 clipped to bounds, no optimization (maximal under-convergence)
+# Only affects instances without fractionation; others fall back to "default".
+SOLVER_MODE = "default"
+
+
+def _bvls(A, b, solvecf_r, relpos_r, abspos_r, w_r, lo, hi):
+    """Exact bound-constrained least squares for the MEANDIR relative/absolute
+    cost (no fractionation). Builds the row-scaled design matrix and calls
+    scipy.optimize.lsq_linear (BVLS)."""
+    rel = solvecf_r & relpos_r
+    rows = [(np.sqrt(w_r[rel]) / b[rel])[:, None] * A[rel, :]]
+    d = [np.sqrt(w_r[rel])]
+    ab = solvecf_r & abspos_r
+    if ab.any():
+        rows.append(np.sqrt(w_r[ab])[:, None] * A[ab, :])
+        d.append(np.sqrt(w_r[ab]) * b[ab])
+    C = np.vstack(rows)
+    dvec = np.concatenate(d)
+    res = lsq_linear(C, dvec, bounds=(lo, hi), method="bvls")
+    return res.x
 
 # Initial-condition strategy for the mldivide-family solvers:
 #   "minnorm"-> numpy.linalg.lstsq (minimum-2-norm solution)
@@ -141,6 +165,23 @@ def invert_active_simulation(solver, em_inst0, em_inst_r, river_col0,
         args = (em_inst0, em_inst_r, river_col0, river_col_r, solvecf_r,
                 abspos_r, relpos_r, weighting_r, frac, xdirect, sources)
         bounds = _bounds(minfrac_r, maxfrac_r)
+        if SOLVER_MODE != "default" and frac.red.n == 0:
+            # convex linear case: exact bounded LSQ or unoptimized X0-clip
+            if SOLVER_MODE == "lsq_linear":
+                Xtemp = _bvls(em_inst_r, river_col_r, solvecf_r, relpos_r,
+                              abspos_r, weighting_r, minfrac_r, maxfrac_r)
+            else:  # x0clip
+                Xtemp = np.clip(X0, minfrac_r, maxfrac_r)
+            functioncost = cost_function(Xtemp, *args)
+            nanmask = np.isnan(xdirect)
+            X = np.full(nEM, np.nan)
+            if not np.all(nanmask):
+                X[~nanmask] = xdirect[~nanmask]
+                X[nanmask] = Xtemp
+            else:
+                X = Xtemp.copy()
+            return X, _update_fractionation(em_inst0, X, river_col0, frac,
+                                            sources), functioncost
         if OPTIMIZER_METHOD == "trust-constr":
             lb = np.array([b[0] if b[0] is not None else -np.inf for b in bounds])
             ub = np.array([b[1] if b[1] is not None else np.inf for b in bounds])
@@ -170,6 +211,13 @@ def invert_active_simulation(solver, em_inst0, em_inst_r, river_col0,
         X = Xtemp.copy()
 
     # (5) update end-member matrix for fractionation-derived isotope values
+    em_updated = _update_fractionation(em_inst0, X, river_col0, frac, sources)
+    return X, em_updated, functioncost
+
+
+def _update_fractionation(em_inst0, X, river_col0, frac, sources):
+    """Post-inversion substitution of fractionation-derived isotope values
+    into the end-member matrix (MEANDIR_InvertActiveSimulation step 5)."""
     em_updated = em_inst0.copy()
     with np.errstate(divide="ignore", invalid="ignore"):
         for i in range(frac.all.n):
@@ -187,5 +235,4 @@ def invert_active_simulation(solver, em_inst0, em_inst_r, river_col0,
                 active_frac = em_inst0[isopos0, empos0] / em_inst0[ionpos0, empos0]
                 new_iso = (source_iso + active_frac) + active_frac * Xactive[empos0] / denom
                 em_updated[isopos0, empos0] = em_updated[ionpos0, empos0] * new_iso
-
-    return X, em_updated, functioncost
+    return em_updated
