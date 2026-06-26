@@ -17,13 +17,13 @@ PUB = {("Mg", "carb"): 67.4, ("Mg", "slct_Mg"): 32.4,
        ("Ca", "carb"): 69.0, ("Ca", "slct_Ca"): 10.3, ("Ca", "evap"): 15.8,
        ("DIC", "carb"): 68.5, ("DIC", "corg"): 31.5,
        ("SO4", "pyri"): 79.4, ("SO4", "evap"): 20.0, ("Na", "slct_Na"): 94.2}
-FTOLS = [1e-10, 1e-8, 1e-6, 1e-5, 1e-4, 1e-3]
+FTOLS = [1e-10, 1e-6, 1e-4, 1e-3]
 
 
-def score(ftol, success, max_iter):
+def score(ftol, success, max_iter, maxidx):
     inv.SLSQP_FTOL = ftol
     _r, ctx = run(NAME, UE, RD, seed=1, max_success=success, max_iter=max_iter,
-                  max_zerohits=4000)
+                  max_zerohits=4000, samples=range(0, maxidx))
     S = ctx["summary"]
     out = {}
     for (ion, em), _t in PUB.items():
@@ -34,26 +34,25 @@ def score(ftol, success, max_iter):
 
 def main():
     import argparse
+    import time
     ap = argparse.ArgumentParser()
-    ap.add_argument("--success", type=int, default=40)
-    ap.add_argument("--max-iter", type=int, default=8000)
+    ap.add_argument("--success", type=int, default=30)
+    ap.add_argument("--max-iter", type=int, default=6000)
+    ap.add_argument("--maxidx", type=int, default=199)
     args = ap.parse_args()
 
-    res = {ft: score(ft, args.success, args.max_iter) for ft in FTOLS}
-    hdr = "  ".join(f"{ft:.0e}" for ft in FTOLS)
-    print(f"{'ion':4s} {'em':9s} {'pub':>6s}   {hdr}")
-    worst = {ft: 0.0 for ft in FTOLS}
-    rms = {ft: [] for ft in FTOLS}
+    res = {}
+    for ft in FTOLS:
+        t0 = time.time()
+        res[ft] = score(ft, args.success, args.max_iter, args.maxidx)
+        worst = max(abs(res[ft][k] - t) for k, t in PUB.items())
+        rms = np.sqrt(np.mean([(res[ft][k] - t) ** 2 for k, t in PUB.items()]))
+        print(f"ftol={ft:.0e}  worstΔ={worst:5.1f}  rmsΔ={rms:5.2f}  ({time.time()-t0:.0f}s)", flush=True)
+
+    print(f"\n{'ion':4s} {'em':9s} {'pub':>6s}   " + "  ".join(f"{ft:.0e}" for ft in FTOLS))
     for (ion, em), t in PUB.items():
         cells = "  ".join(f"{res[ft][(ion, em)]:5.1f}" for ft in FTOLS)
         print(f"{ion:4s} {em:9s} {t:6.1f}   {cells}")
-        for ft in FTOLS:
-            d = abs(res[ft][(ion, em)] - t)
-            worst[ft] = max(worst[ft], d)
-            rms[ft].append(d ** 2)
-    print("\nftol      worstΔ   rmsΔ")
-    for ft in FTOLS:
-        print(f"{ft:.0e}   {worst[ft]:6.1f}   {np.sqrt(np.mean(rms[ft])):5.2f}")
 
 
 if __name__ == "__main__":
