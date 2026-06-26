@@ -22,6 +22,11 @@ from scipy.optimize import nnls, minimize, Bounds, lsq_linear
 # Toggleable so we can A/B which better matches the published results.
 OPTIMIZER_METHOD = "SLSQP"
 
+# SLSQP function-tolerance. MATLAB MEANDIR uses optimset('fmincon') defaults
+# (TolFun = 1e-6); converging tighter than that is *less* faithful to fmincon's
+# actual stopping behaviour. Configurable so we can match it.
+SLSQP_FTOL = 1e-6
+
 # Experimental solver modes for the convex (no-fractionation) case:
 #   "default"    -> the OPTIMIZER_METHOD nonlinear optimizer
 #   "lsq_linear" -> exact bounded least-squares (true convex minimum, fast)
@@ -194,7 +199,7 @@ def invert_active_simulation(solver, em_inst0, em_inst_r, river_col0,
             res = minimize(
                 cost_function, X0, args=args,
                 method="SLSQP", bounds=bounds,
-                options={"maxiter": 1000 * nEM, "ftol": 1e-10},
+                options={"maxiter": 1000 * nEM, "ftol": SLSQP_FTOL},
             )
         Xtemp = res.x
         functioncost = res.fun
