@@ -101,6 +101,33 @@ what this port uses. The ~3-point carbonate/silicate Ca-Mg residual is therefore
 **not** an initial-condition artifact; it is intrinsic to the optimizer
 (SLSQP vs `fmincon`) and end-member sampling on the one under-determined axis,
 and cannot be reduced by changing the solve or adding Monte Carlo samples.
+
+### Optimizer experiment (SLSQP vs interior-point)
+
+A per-instance diagnostic (`scripts/diag_optimizer_activity.py`) showed that on
+the *square* scenario-1 system the exact solve X0 is **out of bounds ~71% of the
+time**, so the bounded optimizer must pick a feasible point — and SLSQP
+systematically shifts mass from carbonate to silicate-Mg (median shift of
+`carb − slct_Mg` ≈ −0.05), exactly the sign of the Table S2 residual. This
+localizes the residual to the optimizer's choice of feasible point.
+
+MATLAB `fmincon` defaults to an **interior-point** method, so we A/B-tested
+SciPy's `trust-constr` (interior-point) against SLSQP head-to-head on the same
+scenario-1 samples (`scripts/ab_optimizer.py`, `ab_optimizer_resumable.py`):
+
+- `trust-constr` is **modestly closer** on the Ca carbonate/silicate split
+  (Ca carbonate +3.0 → +1.8; Ca silicate −3.8 → −3.2) and a **tie** on every
+  other cell — confirming the optimizer is the lever, but the effect is only
+  ~1 point, not a full fix.
+- It is **~500–1000× slower** (10+ min per sample; one pathological sample took
+  8.6 hours), which is impractical for the Monte Carlo loop.
+
+Conclusion: the ~3-point residual is an inherent **optimizer-algorithm artifact**
+on the single degenerate (no Ca/Mg isotope) axis. The `fmincon`-analog narrows it
+by only ~1 point at ~1000× the cost, so **SLSQP remains the default**. Every
+well-constrained quantity already matches to ~1–2 points.
+
+Note: the **ClCritical (cyclic-chloride) correction is *not* involved** here.
 All five Alaska scenarios set `PrecProcessing = 'EndMember'` (verified in
 `MEANDIR_FindScenarioParameters.m`), so the published inversion treats
 precipitation as an ordinary end-member and never invokes
