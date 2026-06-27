@@ -10,10 +10,11 @@ each dissolved ion (the "All samples" column). This maps exactly onto
 Table S2 reports three scenarios — **S1** (no CO₂ degassing), **S2** (degassing
 < 2.5× DIC, the main-text scenario), **S3** (degassing < 25× DIC) — for three
 groups: **Mainstem** (26 `river` samples), **Slough** (4 `slough` samples), and
-**All** (the two together, n=30). Reproduce with:
+**All** (the two together, n=30). The tables below use **200 successes/sample**,
+matching the simulation count used in the paper. Reproduce with:
 
 ```
-python -m scripts.validate_groups --success 60        # all groups, all scenarios
+python -m scripts.validate_groups --success 200       # all groups, all scenarios
 python -m scripts.extract_tableS2                      # re-extract the published grid
 ```
 
@@ -21,80 +22,91 @@ python -m scripts.extract_tableS2                      # re-extract the publishe
 
 Across all three scenarios and groups: **every data-constrained variable matches
 to ≤1 point** — Cl from precipitation (exact), Na/K from silicate, the DIC
-carbonate fraction. The deviations are confined to the **partially- or
-under-constrained splits**: the carbonate↔silicate Ca/Mg split (no Ca/Mg
-isotopes constrain it) and, in the degassing scenarios, the SO₄
-pyrite↔evaporite split. Those splits also carry ~2-point run-to-run Monte Carlo
-variance at 60 successes/sample (the Slough group, n=4, is noisier still).
+carbonate/Corg/degassing split. The remaining deviations are confined to the
+**under-constrained splits**: the carbonate↔silicate Ca/Mg split (no Ca/Mg
+isotopes constrain it) and, in the degassing scenarios, the SO₄ pyrite↔evaporite
+split.
+
+A 60-successes pass and this 200-successes pass separate stable signal from
+realization noise: increasing the simulation count from 60 to 200 removed
+~1 point from each split deviation (e.g. All-samples Mg-carbonate S1 −4.4 → −2.7;
+SO₄ pyrite S2 −3.2 → −2.1), and the remainder is **stable**. The stable
+deviations are largest in the **degassing scenarios (S2, S3)**, where adding the
+degassing end-member makes the system underdetermined (9 observations,
+10 end-members) and the optimizer resolves the resulting null-space slightly
+differently than MATLAB `fmincon` — the same mechanism characterized for the
+Ca/Mg split below (a different solver settling at a different point on a
+genuinely flat axis), now also reaching the SO₄ pyrite/evaporite split. The
+Slough group (n=4) is the noisiest given its small size.
 
 ### All samples (n=30)
 
 | ion | end-member | S1 pub | S1 py | S1 Δ | S2 pub | S2 py | S2 Δ | S3 pub | S3 py | S3 Δ |
 |---|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|
-| DIC | Carbonate | 68.5 | 68.3 | −0.2 | 72.7 | 72.8 | +0.1 | 72.2 | 73.4 | +1.2 |
-| DIC | Corg oxidation | 31.5 | 31.7 | +0.2 | 38.5 | 37.1 | −1.4 | 37.5 | 38.2 | +0.7 |
-| DIC | Degassing | — | — | — | −10.7 | −8.8 | +1.9 | −9.1 | −10.8 | −1.7 |
-| Ca | Carbonate | 69.0 | 69.8 | +0.8 | 75.2 | 75.1 | −0.1 | 75.5 | 76.0 | +0.5 |
-| Ca | Evaporite | 15.8 | 16.1 | +0.3 | 15.7 | 17.8 | +2.1 | 15.5 | 17.8 | +2.3 |
-| Ca | Silicate | 10.3 | 7.3 | −3.0 | 4.6 | 0.5 | −4.1 | 4.1 | 0.3 | −3.8 |
-| Ca | Precipitation | 0.5 | 0.6 | +0.1 | 0.5 | 0.5 | +0.0 | 0.5 | 0.5 | +0.0 |
-| Mg | Carbonate | 67.4 | 63.0 | −4.4 | 70.4 | 68.7 | −1.7 | 69.5 | 69.0 | −0.5 |
-| Mg | Silicate | 32.4 | 36.8 | +4.4 | 29.4 | 31.1 | +1.7 | 30.3 | 30.7 | +0.4 |
-| Mg | Precipitation | 0.2 | 0.2 | +0.0 | 0.2 | 0.2 | +0.0 | 0.2 | 0.2 | +0.0 |
-| Na | Silicate | 94.2 | 94.2 | +0.0 | 94.2 | 94.2 | +0.0 | 94.2 | 94.3 | +0.1 |
-| Na | Precipitation | 5.8 | 5.8 | −0.0 | 5.8 | 5.8 | −0.0 | 5.8 | 5.7 | −0.1 |
-| K | Silicate | 90.8 | 91.0 | +0.2 | 90.6 | 90.9 | +0.3 | 90.8 | 90.9 | +0.1 |
-| K | Precipitation | 9.2 | 9.0 | −0.2 | 9.4 | 9.1 | −0.3 | 9.2 | 9.1 | −0.1 |
+| DIC | Carbonate | 68.5 | 68.0 | −0.5 | 72.7 | 72.9 | +0.2 | 72.2 | 73.3 | +1.1 |
+| DIC | Corg oxidation | 31.5 | 32.0 | +0.5 | 38.5 | 37.2 | −1.3 | 37.5 | 37.8 | +0.3 |
+| DIC | Degassing | — | — | — | −10.7 | −9.4 | +1.3 | −9.1 | −10.9 | −1.8 |
+| Ca | Carbonate | 69.0 | 70.4 | +1.4 | 75.2 | 76.1 | +0.9 | 75.5 | 76.4 | +0.9 |
+| Ca | Evaporite | 15.8 | 16.2 | +0.4 | 15.7 | 17.1 | +1.4 | 15.5 | 17.1 | +1.6 |
+| Ca | Silicate | 10.3 | 7.5 | −2.8 | 4.6 | 0.5 | −4.1 | 4.1 | 0.4 | −3.7 |
+| Ca | Precipitation | 0.5 | 0.5 | +0.0 | 0.5 | 0.5 | −0.0 | 0.5 | 0.5 | −0.0 |
+| Mg | Carbonate | 67.4 | 64.7 | −2.7 | 70.4 | 68.9 | −1.5 | 69.5 | 68.9 | −0.6 |
+| Mg | Silicate | 32.4 | 35.1 | +2.7 | 29.4 | 30.8 | +1.4 | 30.3 | 30.8 | +0.5 |
+| Mg | Precipitation | 0.2 | 0.2 | −0.0 | 0.2 | 0.2 | −0.0 | 0.2 | 0.2 | −0.0 |
+| Na | Silicate | 94.2 | 94.4 | +0.2 | 94.2 | 94.7 | +0.5 | 94.2 | 94.7 | +0.5 |
+| Na | Precipitation | 5.8 | 5.6 | −0.2 | 5.8 | 5.3 | −0.5 | 5.8 | 5.3 | −0.5 |
+| K | Silicate | 90.8 | 91.2 | +0.4 | 90.6 | 91.4 | +0.8 | 90.8 | 91.4 | +0.6 |
+| K | Precipitation | 9.2 | 8.8 | −0.4 | 9.4 | 8.6 | −0.8 | 9.2 | 8.6 | −0.6 |
 | Cl | Precipitation | 100.0 | 100.0 | −0.0 | 100.0 | 100.0 | −0.0 | 100.0 | 100.0 | −0.0 |
-| SO₄ | H₂SO₄ production | 79.4 | 78.9 | −0.5 | 79.6 | 76.4 | −3.2 | 79.7 | 76.4 | −3.3 |
-| SO₄ | Evaporite | 20.0 | 20.6 | +0.6 | 19.8 | 22.9 | +3.1 | 19.8 | 22.9 | +3.1 |
+| SO₄ | H₂SO₄ production | 79.4 | 78.9 | −0.5 | 79.6 | 77.5 | −2.1 | 79.7 | 77.5 | −2.2 |
+| SO₄ | Evaporite | 20.0 | 20.5 | +0.5 | 19.8 | 21.9 | +2.1 | 19.8 | 21.9 | +2.1 |
 | SO₄ | Precipitation | 0.6 | 0.6 | −0.0 | 0.6 | 0.6 | −0.0 | 0.6 | 0.6 | −0.0 |
 
 ### Mainstem (n=26)
 
 | ion | end-member | S1 pub | S1 py | S1 Δ | S2 pub | S2 py | S2 Δ | S3 pub | S3 py | S3 Δ |
 |---|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|
-| DIC | Carbonate | 70.9 | 70.6 | −0.3 | 75.6 | 75.7 | +0.1 | 75.0 | 76.4 | +1.4 |
-| DIC | Corg oxidation | 29.1 | 29.4 | +0.3 | 36.6 | 35.3 | −1.3 | 35.6 | 36.6 | +1.0 |
-| DIC | Degassing | — | — | — | −11.7 | −10.1 | +1.6 | −10.1 | −12.4 | −2.3 |
-| Ca | Carbonate | 66.5 | 67.2 | +0.7 | 73.4 | 73.3 | −0.1 | 73.7 | 74.3 | +0.6 |
-| Ca | Evaporite | 17.0 | 17.5 | +0.5 | 16.9 | 19.1 | +2.2 | 16.6 | 19.1 | +2.5 |
-| Ca | Silicate | 11.2 | 7.9 | −3.3 | 5.0 | 0.6 | −4.4 | 4.5 | 0.4 | −4.1 |
-| Ca | Precipitation | 0.5 | 0.5 | +0.0 | 0.5 | 0.5 | −0.0 | 0.5 | 0.5 | −0.0 |
-| Mg | Carbonate | 64.3 | 59.1 | −5.2 | 67.6 | 65.0 | −2.6 | 66.5 | 65.4 | −1.1 |
-| Mg | Silicate | 35.6 | 40.7 | +5.1 | 32.2 | 34.7 | +2.5 | 33.4 | 34.4 | +1.0 |
-| Mg | Precipitation | 0.2 | 0.2 | −0.0 | 0.2 | 0.2 | −0.0 | 0.2 | 0.2 | −0.0 |
-| Na | Silicate | 95.2 | 95.2 | +0.0 | 95.2 | 95.2 | +0.0 | 95.1 | 95.2 | +0.1 |
-| Na | Precipitation | 4.8 | 4.8 | −0.0 | 4.8 | 4.8 | −0.0 | 4.9 | 4.8 | −0.1 |
-| K | Silicate | 90.8 | 90.9 | +0.1 | 90.5 | 90.8 | +0.3 | 90.7 | 90.8 | +0.1 |
-| K | Precipitation | 9.2 | 9.1 | −0.1 | 9.5 | 9.2 | −0.3 | 9.3 | 9.2 | −0.1 |
+| DIC | Carbonate | 70.9 | 70.3 | −0.6 | 75.6 | 75.8 | +0.2 | 75.0 | 76.3 | +1.3 |
+| DIC | Corg oxidation | 29.1 | 29.7 | +0.6 | 36.6 | 35.4 | −1.2 | 35.6 | 36.2 | +0.6 |
+| DIC | Degassing | — | — | — | −11.7 | −10.9 | +0.8 | −10.1 | −12.5 | −2.4 |
+| Ca | Carbonate | 66.5 | 68.0 | +1.5 | 73.4 | 74.3 | +0.9 | 73.7 | 74.6 | +0.9 |
+| Ca | Evaporite | 17.0 | 17.5 | +0.5 | 16.9 | 18.4 | +1.5 | 16.6 | 18.3 | +1.7 |
+| Ca | Silicate | 11.2 | 8.2 | −3.0 | 5.0 | 0.5 | −4.5 | 4.5 | 0.4 | −4.1 |
+| Ca | Precipitation | 0.5 | 0.4 | −0.1 | 0.5 | 0.4 | −0.1 | 0.5 | 0.4 | −0.1 |
+| Mg | Carbonate | 64.3 | 60.9 | −3.4 | 67.6 | 65.6 | −2.0 | 66.5 | 65.6 | −0.9 |
+| Mg | Silicate | 35.6 | 38.9 | +3.3 | 32.2 | 34.2 | +2.0 | 33.4 | 34.2 | +0.8 |
+| Mg | Precipitation | 0.2 | 0.2 | −0.0 | 0.2 | 0.1 | −0.1 | 0.2 | 0.1 | −0.1 |
+| Na | Silicate | 95.2 | 95.3 | +0.1 | 95.2 | 95.7 | +0.5 | 95.1 | 95.7 | +0.6 |
+| Na | Precipitation | 4.8 | 4.7 | −0.1 | 4.8 | 4.3 | −0.5 | 4.9 | 4.3 | −0.6 |
+| K | Silicate | 90.8 | 91.1 | +0.3 | 90.5 | 91.3 | +0.8 | 90.7 | 91.3 | +0.6 |
+| K | Precipitation | 9.2 | 8.9 | −0.3 | 9.5 | 8.7 | −0.8 | 9.3 | 8.7 | −0.6 |
 | Cl | Precipitation | 100.0 | 100.0 | −0.0 | 100.0 | 100.0 | −0.0 | 100.0 | 100.0 | −0.0 |
-| SO₄ | H₂SO₄ production | 80.7 | 79.6 | −1.1 | 80.7 | 77.7 | −3.0 | 81.0 | 77.7 | −3.3 |
-| SO₄ | Evaporite | 19.0 | 20.1 | +1.1 | 18.9 | 21.9 | +3.0 | 18.6 | 22.0 | +3.4 |
+| SO₄ | H₂SO₄ production | 80.7 | 80.1 | −0.6 | 80.7 | 78.9 | −1.8 | 81.0 | 78.9 | −2.1 |
+| SO₄ | Evaporite | 19.0 | 19.6 | +0.6 | 18.9 | 20.8 | +1.9 | 18.6 | 20.8 | +2.2 |
 | SO₄ | Precipitation | 0.3 | 0.3 | +0.0 | 0.3 | 0.3 | +0.0 | 0.3 | 0.3 | +0.0 |
 
 ### Slough (n=4)
 
 | ion | end-member | S1 pub | S1 py | S1 Δ | S2 pub | S2 py | S2 Δ | S3 pub | S3 py | S3 Δ |
 |---|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|
-| DIC | Carbonate | 52.8 | 53.1 | +0.3 | 53.5 | 54.2 | +0.7 | 53.9 | 54.2 | +0.3 |
-| DIC | Corg oxidation | 47.3 | 47.0 | −0.3 | 50.7 | 48.8 | −1.9 | 49.7 | 48.8 | −0.9 |
-| DIC | Degassing | — | — | — | −3.9 | −0.6 | +3.3 | −2.6 | −0.5 | +2.1 |
-| Ca | Carbonate | 85.2 | 86.4 | +1.2 | 86.7 | 87.1 | +0.4 | 87.0 | 87.3 | +0.3 |
-| Ca | Evaporite | 8.1 | 7.4 | −0.7 | 8.1 | 9.2 | +1.1 | 8.3 | 9.2 | +0.9 |
-| Ca | Silicate | 1.9 | 3.6 | +1.7 | 1.9 | 0.1 | −1.8 | 1.9 | 0.0 | −1.9 |
-| Ca | Precipitation | 1.0 | 1.0 | −0.0 | 1.0 | 0.9 | −0.1 | 1.0 | 0.9 | −0.1 |
-| Mg | Carbonate | 87.6 | 88.1 | +0.5 | 88.6 | 92.2 | +3.6 | 89.2 | 92.2 | +3.0 |
-| Mg | Silicate | 11.9 | 11.5 | −0.4 | 10.9 | 7.2 | −3.7 | 10.3 | 7.2 | −3.1 |
-| Mg | Precipitation | 0.5 | 0.5 | +0.0 | 0.5 | 0.5 | −0.0 | 0.5 | 0.5 | −0.0 |
-| Na | Silicate | 88.0 | 87.9 | −0.1 | 88.0 | 88.0 | +0.0 | 88.2 | 88.0 | −0.2 |
-| Na | Precipitation | 12.0 | 12.1 | +0.1 | 12.0 | 12.0 | −0.0 | 11.8 | 12.0 | +0.2 |
-| K | Silicate | 91.5 | 91.4 | −0.1 | 91.6 | 91.4 | −0.2 | 91.6 | 91.4 | −0.2 |
-| K | Precipitation | 8.5 | 8.6 | +0.1 | 8.4 | 8.6 | +0.2 | 8.4 | 8.6 | +0.2 |
+| DIC | Carbonate | 52.8 | 52.9 | +0.1 | 53.5 | 54.1 | +0.6 | 53.9 | 54.1 | +0.2 |
+| DIC | Corg oxidation | 47.3 | 47.1 | −0.2 | 50.7 | 48.8 | −1.9 | 49.7 | 48.9 | −0.8 |
+| DIC | Degassing | — | — | — | −3.9 | −0.0 | +3.9 | −2.6 | −0.0 | +2.6 |
+| Ca | Carbonate | 85.2 | 86.0 | +0.8 | 86.7 | 88.2 | +1.5 | 87.0 | 88.1 | +1.1 |
+| Ca | Evaporite | 8.1 | 8.2 | +0.1 | 8.1 | 9.2 | +1.1 | 8.3 | 9.2 | +0.9 |
+| Ca | Silicate | 1.9 | 2.6 | +0.7 | 1.9 | 0.0 | −1.9 | 1.9 | 0.0 | −1.9 |
+| Ca | Precipitation | 1.0 | 1.0 | +0.0 | 1.0 | 0.9 | −0.1 | 1.0 | 0.9 | −0.1 |
+| Mg | Carbonate | 87.6 | 89.5 | +1.9 | 88.6 | 90.5 | +1.9 | 89.2 | 90.5 | +1.3 |
+| Mg | Silicate | 11.9 | 9.9 | −2.0 | 10.9 | 8.9 | −2.0 | 10.3 | 8.9 | −1.4 |
+| Mg | Precipitation | 0.5 | 0.5 | −0.0 | 0.5 | 0.5 | −0.0 | 0.5 | 0.5 | −0.0 |
+| Na | Silicate | 88.0 | 88.3 | +0.3 | 88.0 | 88.3 | +0.3 | 88.2 | 88.3 | +0.1 |
+| Na | Precipitation | 12.0 | 11.7 | −0.3 | 12.0 | 11.7 | −0.3 | 11.8 | 11.7 | −0.1 |
+| K | Silicate | 91.5 | 91.7 | +0.2 | 91.6 | 91.8 | +0.2 | 91.6 | 91.8 | +0.2 |
+| K | Precipitation | 8.5 | 8.3 | −0.2 | 8.4 | 8.2 | −0.2 | 8.4 | 8.2 | −0.2 |
 | Cl | Precipitation | 100.0 | 100.0 | −0.0 | 100.0 | 100.0 | −0.0 | 100.0 | 100.0 | −0.0 |
-| SO₄ | H₂SO₄ production | 71.2 | 73.9 | +2.7 | 71.9 | 68.2 | −3.7 | 70.7 | 68.2 | −2.5 |
-| SO₄ | Evaporite | 26.5 | 24.0 | −2.5 | 25.7 | 29.1 | +3.4 | 27.2 | 29.1 | +1.9 |
-| SO₄ | Precipitation | 2.2 | 2.3 | +0.1 | 2.2 | 2.3 | +0.1 | 2.1 | 2.3 | +0.2 |
+| SO₄ | H₂SO₄ production | 71.2 | 71.0 | −0.2 | 71.9 | 68.7 | −3.2 | 70.7 | 68.7 | −2.0 |
+| SO₄ | Evaporite | 26.5 | 26.4 | −0.1 | 25.7 | 28.8 | +3.1 | 27.2 | 28.8 | +1.6 |
+| SO₄ | Precipitation | 2.2 | 2.1 | −0.1 | 2.2 | 2.2 | −0.0 | 2.1 | 2.2 | +0.1 |
 
 The port reproduces the **between-group structure** the paper reports — e.g.
 Slough waters are far more organic-carbon (DIC Corg ≈ 48% vs ≈ 30% mainstem) and
