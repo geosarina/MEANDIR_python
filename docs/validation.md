@@ -122,10 +122,34 @@ scenario-1 samples (`scripts/ab_optimizer.py`, `ab_optimizer_resumable.py`):
 - It is **~500–1000× slower** (10+ min per sample; one pathological sample took
   8.6 hours), which is impractical for the Monte Carlo loop.
 
-Conclusion: the ~3-point residual is an inherent **optimizer-algorithm artifact**
-on the single degenerate (no Ca/Mg isotope) axis. The `fmincon`-analog narrows it
-by only ~1 point at ~1000× the cost, so **SLSQP remains the default**. Every
-well-constrained quantity already matches to ~1–2 points.
+`trust-constr` is also ~500–1000× slower (one sample took 8.6 hours), so it is
+not a practical alternative.
+
+**The optimizer is then exonerated entirely.** On the convex (no-fractionation)
+scenario-1 problem, `scipy.optimize.lsq_linear` finds the *exact* bound-
+constrained minimum; over 990 instances it reaches a (negligibly) lower cost than
+SLSQP in 100% of cases yet returns an **identical** carbonate/silicate split
+(`carb − slct_Mg` = +0.3453 vs +0.3452). So the true global optimum *produces*
+the residual — no optimizer can remove it. Confirmed three ways
+(`scripts/diag_convex_solver.py`, `ab_solver_mode_sc1.py`, `ab_ftol_sweep.py`):
+
+| lever | effect on Mg-carb (pub 67.4) |
+| --- | --- |
+| solver: SLSQP vs exact `lsq_linear` | identical (63.6) |
+| optimizer: SLSQP vs `trust-constr` | ~1 pt, at ~1000× cost |
+| tolerance: `ftol` 1e-10 → 1e-3 | ~0.4 pt (within MC noise) |
+| no optimization at all (`x0clip`) | +1.6 pt, still 2.2 pt short |
+
+Even *zero* optimization (X0 clipped to bounds) cannot reach the published value,
+because the unoptimized X0 is itself ~2 pts off — and X0 is fully determined by
+the **sampled end-member matrix**. So the ~3-point Ca/Mg residual is dominated by
+**end-member sampling**, not the optimizer.
+
+The SLSQP tolerance is set to `ftol = 1e-6` to match MATLAB `fmincon`'s
+`optimset` default (`TolFun = 1e-6`); converging tighter is *less* faithful and
+~20% slower for no accuracy gain. **SLSQP remains the default optimizer.** Every
+well-constrained quantity matches to ~1–2 points; the residual is confined to the
+one degenerate (no Ca/Mg isotope) axis.
 
 Note: the **ClCritical (cyclic-chloride) correction is *not* involved** here.
 All five Alaska scenarios set `PrecProcessing = 'EndMember'` (verified in
