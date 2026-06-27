@@ -132,6 +132,10 @@ def main():
     ap.add_argument("--success", type=int, default=60)
     ap.add_argument("--max-iter", type=int, default=8000)
     args = ap.parse_args()
+    # separate cache + output per success count (keeps the 60- and 200-runs apart)
+    global CACHE, OUT
+    CACHE = CACHE.replace(".json", f"_s{args.success}.json")
+    OUT = OUT.replace(".md", f"_s{args.success}.md")
     main_idx, slough_idx = classify()
     samples = main_idx + slough_idx
     cache = load_cache()
