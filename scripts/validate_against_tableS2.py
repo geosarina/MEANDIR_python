@@ -24,28 +24,29 @@ RD = "reference/data/RiverDataSpreadsheet_Kemeny_etal_2023.xlsx"
 # (ion, paper_end_member, port_em) -> {scenario: published_pct}
 # Silicate maps to the ion-specific resolved silicate end-member.
 PUBLISHED = {
-    "DIC": [("Carbonate", "carb", {1: 68.5, 2: 72.7}),
-            ("Corg oxidation", "corg", {1: 31.5, 2: 38.5}),
-            ("Degassing", "degas", {1: None, 2: -10.7})],
-    "Ca": [("Carbonate", "carb", {1: 69.0, 2: 75.2}),
-           ("Evaporite", "evap", {1: 15.8, 2: 15.7}),
-           ("Silicate", "slct_Ca", {1: 10.3, 2: 4.6}),
-           ("Precipitation", "prec", {1: 0.5, 2: 0.5})],
-    "Mg": [("Carbonate", "carb", {1: 67.4, 2: 70.4}),
-           ("Silicate", "slct_Mg", {1: 32.4, 2: 29.4}),
-           ("Precipitation", "prec", {1: 0.2, 2: 0.2})],
-    "Na": [("Silicate", "slct_Na", {1: 94.2, 2: 94.2}),
-           ("Precipitation", "prec", {1: 5.8, 2: 5.8})],
-    "K": [("Silicate", "slct_K", {1: 90.8, 2: 90.6}),
-          ("Precipitation", "prec", {1: 9.2, 2: 9.4})],
-    "Cl": [("Precipitation", "prec", {1: 100.0, 2: 100.0})],
-    "SO4": [("H2SO4 production", "pyri", {1: 79.4, 2: 79.6}),
-            ("Evaporite", "evap", {1: 20.0, 2: 19.8}),
-            ("Precipitation", "prec", {1: 0.6, 2: 0.6})],
+    "DIC": [("Carbonate", "carb", {1: 68.5, 2: 72.7, 3: 72.2}),
+            ("Corg oxidation", "corg", {1: 31.5, 2: 38.5, 3: 37.5}),
+            ("Degassing", "degas", {1: None, 2: -10.7, 3: -9.1})],
+    "Ca": [("Carbonate", "carb", {1: 69.0, 2: 75.2, 3: 75.5}),
+           ("Evaporite", "evap", {1: 15.8, 2: 15.7, 3: 15.5}),
+           ("Silicate", "slct_Ca", {1: 10.3, 2: 4.6, 3: 4.1}),
+           ("Precipitation", "prec", {1: 0.5, 2: 0.5, 3: 0.5})],
+    "Mg": [("Carbonate", "carb", {1: 67.4, 2: 70.4, 3: 69.5}),
+           ("Silicate", "slct_Mg", {1: 32.4, 2: 29.4, 3: 30.3}),
+           ("Precipitation", "prec", {1: 0.2, 2: 0.2, 3: 0.2})],
+    "Na": [("Silicate", "slct_Na", {1: 94.2, 2: 94.2, 3: 94.2}),
+           ("Precipitation", "prec", {1: 5.8, 2: 5.8, 3: 5.8})],
+    "K": [("Silicate", "slct_K", {1: 90.8, 2: 90.6, 3: 90.8}),
+          ("Precipitation", "prec", {1: 9.2, 2: 9.4, 3: 9.2})],
+    "Cl": [("Precipitation", "prec", {1: 100.0, 2: 100.0, 3: 100.0})],
+    "SO4": [("H2SO4 production", "pyri", {1: 79.4, 2: 79.6, 3: 79.7}),
+            ("Evaporite", "evap", {1: 20.0, 2: 19.8, 3: 19.8}),
+            ("Precipitation", "prec", {1: 0.6, 2: 0.6, 3: 0.6})],
 }
 
 SCENARIOS = {1: "AK_scenario1_carbonate_slctindi",
-             2: "AK_scenario2_carbonate_slctindi_degas_2p5"}
+             2: "AK_scenario2_carbonate_slctindi_degas_2p5",
+             3: "AK_scenario3_carbonate_slctindi_degas_25"}
 
 
 def main():
