@@ -47,8 +47,9 @@ def run(scenario_name: str, user_entries_path, river_data_path, *,
     dists = make_em_distributions(params, em_data, delta2r)
 
     if samples is not None:
+        idx = [s for s in samples if 0 <= s < len(functional)]
         mask = np.zeros_like(functional)
-        mask[list(samples)] = functional[list(samples)]
+        mask[idx] = functional[idx]
         functional = mask
 
     rng = np.random.default_rng(seed)
