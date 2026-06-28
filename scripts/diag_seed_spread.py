@@ -33,7 +33,7 @@ def save(c):
 
 def main():
     main_idx, slough_idx = classify()[:2]
-    samples = main_idx + slough_idx
+    samples = main_idx          # mainstem only (clean test; slough is slow + noisy)
     cache = load()
     for seed in SEEDS:
         for s in samples:
@@ -48,20 +48,22 @@ def main():
             save(cache)
         print(f"seed {seed} done", flush=True)
 
-    print(f"\nMg<-carbonate mean-of-median (%), published = 67.4")
-    print(f"{'seed':>4}  {'All(n=30)':>10}  {'Mainstem(n=26)':>14}")
-    allvals, mainvals = [], []
+    PUB_MAIN = 64.3   # Table S2 Mainstem Mg<-carbonate, scenario 1
+    print(f"\nMainstem (n=26) Mg<-carbonate mean-of-median (%), published = {PUB_MAIN}")
+    mainvals = []
     for seed in SEEDS:
-        a = [cache[f"{seed}|{s}"] for s in samples if cache.get(f"{seed}|{s}") is not None]
         m = [cache[f"{seed}|{s}"] for s in main_idx if cache.get(f"{seed}|{s}") is not None]
-        av, mv = np.mean(a), np.mean(m)
-        allvals.append(av); mainvals.append(mv)
-        print(f"{seed:>4}  {av:>10.1f}  {mv:>14.1f}")
-    print(f"\nAll      : mean={np.mean(allvals):.1f}  sd={np.std(allvals, ddof=1):.2f}  "
-          f"range=[{min(allvals):.1f},{max(allvals):.1f}]  -> published 67.4 is "
-          f"{(67.4-np.mean(allvals))/np.std(allvals, ddof=1):+.1f} sd away")
-    print(f"Mainstem : mean={np.mean(mainvals):.1f}  sd={np.std(mainvals, ddof=1):.2f}  "
-          f"range=[{min(mainvals):.1f},{max(mainvals):.1f}]")
+        if len(m) < len(main_idx):
+            print(f"  seed {seed}: incomplete ({len(m)}/{len(main_idx)})")
+            continue
+        mv = np.mean(m)
+        mainvals.append(mv)
+        print(f"  seed {seed}: {mv:.1f}")
+    if len(mainvals) >= 2:
+        sd = np.std(mainvals, ddof=1)
+        print(f"\nmean={np.mean(mainvals):.1f}  sd={sd:.2f}  "
+              f"range=[{min(mainvals):.1f},{max(mainvals):.1f}]")
+        print(f"published {PUB_MAIN} is {(PUB_MAIN-np.mean(mainvals))/sd:+.1f} seed-sd from the python mean")
 
 
 if __name__ == "__main__":
