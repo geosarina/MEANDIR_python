@@ -212,8 +212,10 @@ the residual — no optimizer can remove it. Confirmed three ways
 
 Even *zero* optimization (X0 clipped to bounds) cannot reach the published value,
 because the unoptimized X0 is itself ~2 pts off — and X0 is fully determined by
-the **sampled end-member matrix**. So the ~3-point Ca/Mg residual is dominated by
-**end-member sampling**, not the optimizer.
+the **sampled end-member matrix**. So the ~3-point Ca/Mg residual traces to the
+**sampled end-member matrix**, not the optimizer — which the next section audits
+directly (and finds the sampler is *faithful* to the priors, so the offset is not
+a sampling bug).
 
 The SLSQP tolerance is set to `ftol = 1e-6` to match MATLAB `fmincon`'s
 `optimset` default (`TolFun = 1e-6`); converging tighter is *less* faithful and
@@ -228,6 +230,62 @@ precipitation as an ordinary end-member and never invokes
 `MEANDIR_ClCriticalCorrection`. The port matches that: ClCritical is implemented
 (`engine/clcritical.py`) but gated behind `PrecProcessing == 'ClCrit'` and stays
 inert for these scenarios.
+
+### Direct sampling audit: faithful priors, not a bug
+
+The optimizer experiments above narrowed the Ca/Mg residual to "end-member
+sampling," so we audited the sampler directly
+(`scripts/diag_sampling_audit.py`): for the carbonate and silicate Mg ratios
+and the evaporite Ca/Mg, we compared (a) the spreadsheet specification
+(Min/Max/distribution type), (b) the **raw** per-cell draw before
+closure/rejection, and (c) the **accepted** draw after mass-balance closure and
+reject/retry, and measured the acceptance rate. The result is a clean negative:
+
+- The raw draws reproduce the spreadsheet priors exactly — e.g. carbonate→Mg is
+  `UNI[0, 0.333]` with raw median **0.168** (expected 0.167); the accepted draws
+  are essentially unchanged (median **0.165**).
+- Acceptance conditioning barely moves anything: the mean is **1.00
+  attempts/accept** — the mass-balance rejection almost never fires for these
+  scenarios, so it cannot be skewing the split.
+
+So the sampler is faithful to the published priors, and the closure/rejection
+path is not introducing the offset. Combined with the optimizer exoneration
+(`lsq_linear`'s exact convex minimum returns the *same* split as SLSQP), every
+auditable component of the Python pipeline is reproducing what it should.
+
+**Where the residual actually lives.** Decomposing the carbonate contribution
+shows the residual is *not* in how much carbonate the inversion infers — the
+**carbonate→DIC** contribution matches the paper (Δ ≈ −0.6), so the carbonate
+*amount* (X_carb) is right. The deviation is entirely in carbonate's **internal
+Ca↔Mg partition**: carbonate→Ca and carbonate→Mg move in *opposite* directions
+(Δ ≈ +1.5 on Ca, −3.4 on Mg) about a correct total. Because carbonate closes on
+Ca (`carb_Ca = 0.667 − carb_Mg`) and no Ca or Mg isotope pins that partition, it
+is the single genuinely free axis of the problem, and a faithful sampler + a
+faithful exact solve still land a few points to one side of MATLAB on it.
+
+**It is a stable offset, not noise.** Running scenario 1 under six independent
+RNG seeds (`scripts/diag_seed_spread.py`, 120 successes/sample) gives, for the
+Mainstem Mg←carbonate mean-of-median (published 64.3):
+
+| seed | 1 | 2 | 3 | 4 | 5 | 6 | mean | sd |
+| --- | --: | --: | --: | --: | --: | --: | --: | --: |
+| Mainstem % | 60.6 | 62.1 | 59.9 | 56.8 | 59.6 | 62.8 | **60.3** | 2.1 |
+
+All six seeds fall **below** the published value; the published 64.3 sits
+**+1.9 seed-σ** above the Python mean (the All-samples group is the same story:
+mean 64.0, published 67.4, +1.8 σ). A pure-noise residual would straddle the
+published value across seeds; this one consistently sits ~3–4 points to one side.
+
+**Honest conclusion.** No auditable part of the Python port is wrong: the priors,
+closure, rejection, charge conversion, river σ, isotope rows, and the exact
+bound-constrained solve all check out line-by-line against the MATLAB source and
+the spreadsheet. The ~3-point Ca/Mg residual is a small, *stable* offset on the
+one axis the data does not constrain — most plausibly a difference in the MATLAB
+build's effective priors or solver path that is invisible from the Python side.
+Closing it further would require a side-by-side MATLAB run with a controlled RNG
+stream, not another change to this port. As shown next, the offset is ~5% of the
+parameter's own uncertainty band, so it does not affect any scientific
+conclusion.
 
 ### The residual is within the model's own uncertainty
 
