@@ -239,16 +239,22 @@ only places a sub-point difference could remain are the reject/retry conditional
 and distribution-construction minutiae — both below the resolution of a
 statistical comparison.
 
-Crucially, the carbonate/silicate Mg split is the *least-constrained* quantity in
-the inversion. Pooled over successful simulations, the fractional contribution of
-carbonate to Mg has a **5th–95th band of ~20% to ~87%** — a 67-point-wide
-intrinsic uncertainty (no Ca/Mg isotopes constrain it). The ~3-point
-Python–MATLAB difference in the *median* is therefore **~5% of the model's own
-uncertainty band on that parameter** — not a meaningful scientific disagreement,
-but two faithful implementations landing at slightly different points within the
-same broad, data-unconstrained distribution. Every quantity the data actually
-constrains matches to ~1–2 points.
+Crucially, the deviations sit on the *least-constrained* quantities in the
+inversion, and they are small relative to those quantities' own spread. Pooled
+over successful simulations:
 
-Cl, Na, K, SO₄, and the DIC carbon split — the quantities the paper's
-conclusions rest on — reproduce to within ~1–2 points, so the port is faithful
-to the published inversion.
+- **carbonate↔silicate Mg split** — the fractional contribution of carbonate to
+  Mg has a **5th–95th band of ~20% to ~87%** (a 67-point-wide intrinsic
+  uncertainty; no Ca/Mg isotopes constrain it). The ~3-point median difference is
+  **~5% of that band**.
+- **SO₄ pyrite↔evaporite split** (degassing scenarios) — SO₄ from pyrite
+  (H₂SO₄ production) has a **5th–95th band of ~55% to ~99%** (≈44 points wide;
+  per-river medians 75–84%). The stable ~2-point median difference is likewise
+  **~5% of that band**.
+
+In both cases the Python–MATLAB difference is a small fraction of the model's own
+uncertainty on the parameter — not a meaningful scientific disagreement, but two
+faithful implementations landing at slightly different points within the same
+broad, data-unconstrained distribution. Every quantity the data actually
+constrains (Cl, Na, K, the DIC carbon split) matches to ≤1 point, so the port is
+faithful to the published inversion where it matters.
