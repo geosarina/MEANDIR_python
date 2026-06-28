@@ -1,0 +1,163 @@
+group,n_samples,scenario,degassing_constraint,ion,end_member,published_pct,python_pct,delta_pct
+All samples,30,S1,none,DIC,Carbonate,68.5,68.01,-0.49
+All samples,30,S1,none,DIC,Corg oxidation,31.5,31.99,0.49
+All samples,30,S1,none,DIC,Degassing,,,
+All samples,30,S1,none,Ca,Carbonate,69.0,70.41,1.41
+All samples,30,S1,none,Ca,Evaporite,15.8,16.23,0.43
+All samples,30,S1,none,Ca,Silicate,10.3,7.49,-2.81
+All samples,30,S1,none,Ca,Precipitation,0.5,0.52,0.02
+All samples,30,S1,none,Mg,Carbonate,67.4,64.69,-2.71
+All samples,30,S1,none,Mg,Silicate,32.4,35.06,2.66
+All samples,30,S1,none,Mg,Precipitation,0.2,0.2,-0.0
+All samples,30,S1,none,Na,Silicate,94.2,94.39,0.19
+All samples,30,S1,none,Na,Precipitation,5.8,5.61,-0.19
+All samples,30,S1,none,K,Silicate,90.8,91.18,0.38
+All samples,30,S1,none,K,Precipitation,9.2,8.81,-0.39
+All samples,30,S1,none,Cl,Precipitation,100.0,100.0,-0.0
+All samples,30,S1,none,SO4,H2SO4 production,79.4,78.88,-0.52
+All samples,30,S1,none,SO4,Evaporite,20.0,20.52,0.52
+All samples,30,S1,none,SO4,Precipitation,0.6,0.56,-0.04
+All samples,30,S2,<2.5x DIC,DIC,Carbonate,72.7,72.89,0.19
+All samples,30,S2,<2.5x DIC,DIC,Corg oxidation,38.5,37.22,-1.28
+All samples,30,S2,<2.5x DIC,DIC,Degassing,-10.7,-9.45,1.25
+All samples,30,S2,<2.5x DIC,Ca,Carbonate,75.2,76.13,0.93
+All samples,30,S2,<2.5x DIC,Ca,Evaporite,15.7,17.14,1.44
+All samples,30,S2,<2.5x DIC,Ca,Silicate,4.6,0.47,-4.13
+All samples,30,S2,<2.5x DIC,Ca,Precipitation,0.5,0.48,-0.02
+All samples,30,S2,<2.5x DIC,Mg,Carbonate,70.4,68.91,-1.49
+All samples,30,S2,<2.5x DIC,Mg,Silicate,29.4,30.84,1.44
+All samples,30,S2,<2.5x DIC,Mg,Precipitation,0.2,0.19,-0.01
+All samples,30,S2,<2.5x DIC,Na,Silicate,94.2,94.72,0.52
+All samples,30,S2,<2.5x DIC,Na,Precipitation,5.8,5.28,-0.52
+All samples,30,S2,<2.5x DIC,K,Silicate,90.6,91.36,0.76
+All samples,30,S2,<2.5x DIC,K,Precipitation,9.4,8.64,-0.76
+All samples,30,S2,<2.5x DIC,Cl,Precipitation,100.0,100.0,-0.0
+All samples,30,S2,<2.5x DIC,SO4,H2SO4 production,79.6,77.49,-2.11
+All samples,30,S2,<2.5x DIC,SO4,Evaporite,19.8,21.88,2.08
+All samples,30,S2,<2.5x DIC,SO4,Precipitation,0.6,0.55,-0.05
+All samples,30,S3,<25x DIC,DIC,Carbonate,72.2,73.35,1.15
+All samples,30,S3,<25x DIC,DIC,Corg oxidation,37.5,37.84,0.34
+All samples,30,S3,<25x DIC,DIC,Degassing,-9.1,-10.85,-1.75
+All samples,30,S3,<25x DIC,Ca,Carbonate,75.5,76.4,0.9
+All samples,30,S3,<25x DIC,Ca,Evaporite,15.5,17.12,1.62
+All samples,30,S3,<25x DIC,Ca,Silicate,4.1,0.36,-3.74
+All samples,30,S3,<25x DIC,Ca,Precipitation,0.5,0.48,-0.02
+All samples,30,S3,<25x DIC,Mg,Carbonate,69.5,68.94,-0.56
+All samples,30,S3,<25x DIC,Mg,Silicate,30.3,30.83,0.53
+All samples,30,S3,<25x DIC,Mg,Precipitation,0.2,0.19,-0.01
+All samples,30,S3,<25x DIC,Na,Silicate,94.2,94.72,0.52
+All samples,30,S3,<25x DIC,Na,Precipitation,5.8,5.28,-0.52
+All samples,30,S3,<25x DIC,K,Silicate,90.8,91.36,0.56
+All samples,30,S3,<25x DIC,K,Precipitation,9.2,8.64,-0.56
+All samples,30,S3,<25x DIC,Cl,Precipitation,100.0,100.0,-0.0
+All samples,30,S3,<25x DIC,SO4,H2SO4 production,79.7,77.5,-2.2
+All samples,30,S3,<25x DIC,SO4,Evaporite,19.8,21.87,2.07
+All samples,30,S3,<25x DIC,SO4,Precipitation,0.6,0.55,-0.05
+Mainstem,26,S1,none,DIC,Carbonate,70.9,70.34,-0.56
+Mainstem,26,S1,none,DIC,Corg oxidation,29.1,29.67,0.57
+Mainstem,26,S1,none,DIC,Degassing,,,
+Mainstem,26,S1,none,Ca,Carbonate,66.5,68.01,1.51
+Mainstem,26,S1,none,Ca,Evaporite,17.0,17.47,0.47
+Mainstem,26,S1,none,Ca,Silicate,11.2,8.24,-2.96
+Mainstem,26,S1,none,Ca,Precipitation,0.5,0.45,-0.05
+Mainstem,26,S1,none,Mg,Carbonate,64.3,60.87,-3.43
+Mainstem,26,S1,none,Mg,Silicate,35.6,38.94,3.34
+Mainstem,26,S1,none,Mg,Precipitation,0.2,0.15,-0.05
+Mainstem,26,S1,none,Na,Silicate,95.2,95.33,0.13
+Mainstem,26,S1,none,Na,Precipitation,4.8,4.67,-0.13
+Mainstem,26,S1,none,K,Silicate,90.8,91.1,0.3
+Mainstem,26,S1,none,K,Precipitation,9.2,8.9,-0.3
+Mainstem,26,S1,none,Cl,Precipitation,100.0,100.0,-0.0
+Mainstem,26,S1,none,SO4,H2SO4 production,80.7,80.08,-0.62
+Mainstem,26,S1,none,SO4,Evaporite,19.0,19.61,0.61
+Mainstem,26,S1,none,SO4,Precipitation,0.3,0.32,0.02
+Mainstem,26,S2,<2.5x DIC,DIC,Carbonate,75.6,75.77,0.17
+Mainstem,26,S2,<2.5x DIC,DIC,Corg oxidation,36.6,35.43,-1.17
+Mainstem,26,S2,<2.5x DIC,DIC,Degassing,-11.7,-10.9,0.8
+Mainstem,26,S2,<2.5x DIC,Ca,Carbonate,73.4,74.28,0.88
+Mainstem,26,S2,<2.5x DIC,Ca,Evaporite,16.9,18.36,1.46
+Mainstem,26,S2,<2.5x DIC,Ca,Silicate,5.0,0.54,-4.46
+Mainstem,26,S2,<2.5x DIC,Ca,Precipitation,0.5,0.42,-0.08
+Mainstem,26,S2,<2.5x DIC,Mg,Carbonate,67.6,65.58,-2.02
+Mainstem,26,S2,<2.5x DIC,Mg,Silicate,32.2,34.21,2.01
+Mainstem,26,S2,<2.5x DIC,Mg,Precipitation,0.2,0.15,-0.05
+Mainstem,26,S2,<2.5x DIC,Na,Silicate,95.2,95.71,0.51
+Mainstem,26,S2,<2.5x DIC,Na,Precipitation,4.8,4.29,-0.51
+Mainstem,26,S2,<2.5x DIC,K,Silicate,90.5,91.3,0.8
+Mainstem,26,S2,<2.5x DIC,K,Precipitation,9.5,8.7,-0.8
+Mainstem,26,S2,<2.5x DIC,Cl,Precipitation,100.0,100.0,-0.0
+Mainstem,26,S2,<2.5x DIC,SO4,H2SO4 production,80.7,78.85,-1.85
+Mainstem,26,S2,<2.5x DIC,SO4,Evaporite,18.9,20.81,1.91
+Mainstem,26,S2,<2.5x DIC,SO4,Precipitation,0.3,0.3,0.0
+Mainstem,26,S3,<25x DIC,DIC,Carbonate,75.0,76.3,1.3
+Mainstem,26,S3,<25x DIC,DIC,Corg oxidation,35.6,36.15,0.55
+Mainstem,26,S3,<25x DIC,DIC,Degassing,-10.1,-12.52,-2.42
+Mainstem,26,S3,<25x DIC,Ca,Carbonate,73.7,74.59,0.89
+Mainstem,26,S3,<25x DIC,Ca,Evaporite,16.6,18.34,1.74
+Mainstem,26,S3,<25x DIC,Ca,Silicate,4.5,0.41,-4.09
+Mainstem,26,S3,<25x DIC,Ca,Precipitation,0.5,0.42,-0.08
+Mainstem,26,S3,<25x DIC,Mg,Carbonate,66.5,65.62,-0.88
+Mainstem,26,S3,<25x DIC,Mg,Silicate,33.4,34.19,0.79
+Mainstem,26,S3,<25x DIC,Mg,Precipitation,0.2,0.15,-0.05
+Mainstem,26,S3,<25x DIC,Na,Silicate,95.1,95.71,0.61
+Mainstem,26,S3,<25x DIC,Na,Precipitation,4.9,4.29,-0.61
+Mainstem,26,S3,<25x DIC,K,Silicate,90.7,91.3,0.6
+Mainstem,26,S3,<25x DIC,K,Precipitation,9.3,8.7,-0.6
+Mainstem,26,S3,<25x DIC,Cl,Precipitation,100.0,100.0,-0.0
+Mainstem,26,S3,<25x DIC,SO4,H2SO4 production,81.0,78.86,-2.14
+Mainstem,26,S3,<25x DIC,SO4,Evaporite,18.6,20.8,2.2
+Mainstem,26,S3,<25x DIC,SO4,Precipitation,0.3,0.3,0.0
+Slough,4,S1,none,DIC,Carbonate,52.8,52.9,0.1
+Slough,4,S1,none,DIC,Corg oxidation,47.3,47.12,-0.18
+Slough,4,S1,none,DIC,Degassing,,,
+Slough,4,S1,none,Ca,Carbonate,85.2,86.0,0.8
+Slough,4,S1,none,Ca,Evaporite,8.1,8.17,0.07
+Slough,4,S1,none,Ca,Silicate,1.9,2.59,0.69
+Slough,4,S1,none,Ca,Precipitation,1.0,1.01,0.01
+Slough,4,S1,none,Mg,Carbonate,87.6,89.5,1.9
+Slough,4,S1,none,Mg,Silicate,11.9,9.87,-2.03
+Slough,4,S1,none,Mg,Precipitation,0.5,0.49,-0.01
+Slough,4,S1,none,Na,Silicate,88.0,88.29,0.29
+Slough,4,S1,none,Na,Precipitation,12.0,11.71,-0.29
+Slough,4,S1,none,K,Silicate,91.5,91.75,0.25
+Slough,4,S1,none,K,Precipitation,8.5,8.25,-0.25
+Slough,4,S1,none,Cl,Precipitation,100.0,100.0,-0.0
+Slough,4,S1,none,SO4,H2SO4 production,71.2,71.01,-0.19
+Slough,4,S1,none,SO4,Evaporite,26.5,26.42,-0.08
+Slough,4,S1,none,SO4,Precipitation,2.2,2.11,-0.09
+Slough,4,S2,<2.5x DIC,DIC,Carbonate,53.5,54.13,0.63
+Slough,4,S2,<2.5x DIC,DIC,Corg oxidation,50.7,48.84,-1.86
+Slough,4,S2,<2.5x DIC,DIC,Degassing,-3.9,-0.04,3.86
+Slough,4,S2,<2.5x DIC,Ca,Carbonate,86.7,88.15,1.45
+Slough,4,S2,<2.5x DIC,Ca,Evaporite,8.1,9.2,1.1
+Slough,4,S2,<2.5x DIC,Ca,Silicate,1.9,0.01,-1.89
+Slough,4,S2,<2.5x DIC,Ca,Precipitation,1.0,0.91,-0.09
+Slough,4,S2,<2.5x DIC,Mg,Carbonate,88.6,90.53,1.93
+Slough,4,S2,<2.5x DIC,Mg,Silicate,10.9,8.93,-1.97
+Slough,4,S2,<2.5x DIC,Mg,Precipitation,0.5,0.49,-0.01
+Slough,4,S2,<2.5x DIC,Na,Silicate,88.0,88.26,0.26
+Slough,4,S2,<2.5x DIC,Na,Precipitation,12.0,11.73,-0.27
+Slough,4,S2,<2.5x DIC,K,Silicate,91.6,91.77,0.17
+Slough,4,S2,<2.5x DIC,K,Precipitation,8.4,8.23,-0.17
+Slough,4,S2,<2.5x DIC,Cl,Precipitation,100.0,100.0,-0.0
+Slough,4,S2,<2.5x DIC,SO4,H2SO4 production,71.9,68.65,-3.25
+Slough,4,S2,<2.5x DIC,SO4,Evaporite,25.7,28.83,3.13
+Slough,4,S2,<2.5x DIC,SO4,Precipitation,2.2,2.17,-0.03
+Slough,4,S3,<25x DIC,DIC,Carbonate,53.9,54.15,0.25
+Slough,4,S3,<25x DIC,DIC,Corg oxidation,49.7,48.86,-0.84
+Slough,4,S3,<25x DIC,DIC,Degassing,-2.6,-0.03,2.57
+Slough,4,S3,<25x DIC,Ca,Carbonate,87.0,88.14,1.14
+Slough,4,S3,<25x DIC,Ca,Evaporite,8.3,9.2,0.9
+Slough,4,S3,<25x DIC,Ca,Silicate,1.9,0.01,-1.89
+Slough,4,S3,<25x DIC,Ca,Precipitation,1.0,0.91,-0.09
+Slough,4,S3,<25x DIC,Mg,Carbonate,89.2,90.51,1.31
+Slough,4,S3,<25x DIC,Mg,Silicate,10.3,8.95,-1.35
+Slough,4,S3,<25x DIC,Mg,Precipitation,0.5,0.49,-0.01
+Slough,4,S3,<25x DIC,Na,Silicate,88.2,88.26,0.06
+Slough,4,S3,<25x DIC,Na,Precipitation,11.8,11.73,-0.07
+Slough,4,S3,<25x DIC,K,Silicate,91.6,91.77,0.17
+Slough,4,S3,<25x DIC,K,Precipitation,8.4,8.23,-0.17
+Slough,4,S3,<25x DIC,Cl,Precipitation,100.0,100.0,-0.0
+Slough,4,S3,<25x DIC,SO4,H2SO4 production,70.7,68.67,-2.03
+Slough,4,S3,<25x DIC,SO4,Evaporite,27.2,28.83,1.63
+Slough,4,S3,<25x DIC,SO4,Precipitation,2.1,2.17,0.07
