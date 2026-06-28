@@ -22,8 +22,9 @@ MAXTRYCOUNT = 500
 
 
 def pull_end_member_ratios(params, em_data, dists, river_column0, rng,
-                           delta2r=None, sample_index=None):
-    """Return (EMIterInst [nOL x nEM], fail_case)."""
+                           delta2r=None, sample_index=None, return_trycount=False):
+    """Return (EMIterInst [nOL x nEM], fail_case). If ``return_trycount`` is set,
+    also return the number of draw attempts (for sampling diagnostics)."""
     obs = params.ObsList
     ems = params.EMList0
     nIR, nEM = dists.nOL, dists.nEM
@@ -127,6 +128,8 @@ def pull_end_member_ratios(params, em_data, dists, river_column0, rng,
         ionpos = obs.index(ion)
         EMIterInst[ii, :] = EMIterInst[ii, :] * EMIterInst[ionpos, :]
 
+    if return_trycount:
+        return EMIterInst, fail, trycount
     return EMIterInst, fail
 
 
