@@ -3,7 +3,8 @@
 This folder holds machine-readable (CSV) outputs of the validation tests that
 compare the Python port of MEANDIR against the published MATLAB results in
 Kemeny et al. (2023, *Global Biogeochemical Cycles* 2022GB007644). Each test is
-exported at up to three granularities — **per-simulation** (raw), **per-sample**
+exported at up to four granularities — **per-simulation** (raw; both the focused
+Table S2 cells and the complete end-member × observation matrix), **per-sample**
 (percentile summary), and **summary** (mean-of-median vs published) — and every
 file is described below: what it tests, the exact run configuration (samples /
 simulations / successes / solver settings), and a definition of every column.
@@ -59,6 +60,21 @@ degassing and any sample reaching < 200 successes).
 | `ion` | dissolved species the contribution is *to* (DIC, Ca, Mg, Na, K, Cl, SO4) |
 | `end_member` | source end-member it is *from* (Carbonate, Corg oxidation, Degassing, Evaporite, Silicate, Precipitation, H2SO4 production) |
 | `contribution_pct` | the fractional contribution for that single simulation (%) |
+
+### `full_persimulation_s200.csv` — raw, the complete 9×10 matrix per simulation
+
+The same per-simulation data as above but **wide** and **complete**: one row per
+successful simulation, with a column for the contribution of every end-member to
+every observation (the full inversion result). ≈ 18k rows.
+
+| column | meaning |
+| --- | --- |
+| `scenario`, `degassing_constraint`, `group`, `sample_index`, `river_name`, `sim_index` | as above |
+| `<ion>.<end_member>` | 90 columns, named `ion.end_member`, giving the fractional contribution (%) of that end-member to that observation for the single simulation. Observations: Ca, Mg, Na, K, Cl, SO4, DIC, d34S, d13C. End-members: prec, carb, slct_Ca, slct_Mg, slct_Na, slct_K, pyri, evap, corg, degas. A value of `0.0` means that end-member sources none of that observation; a **blank** means the end-member is absent in that scenario (`*.degas` in S1). |
+
+This is the rawest output: the 18 Table S2 cells above are a subset of these
+columns (e.g. `Mg.carb`, `SO4.pyri`). The d34S/d13C columns are the contributions
+to the isotope-product rows used internally by the inversion.
 
 ### `tableS2_persample_s200.csv` — per-sample percentile summary
 

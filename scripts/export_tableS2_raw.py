@@ -1,15 +1,15 @@
-"""Capture and export the Table S2 validation at three granularities:
+"""Capture and export the Table S2 validation at multiple granularities.
 
-  validation_outputs/tableS2_summary_200successes.csv       (mean-of-median per group/scenario/cell)
-  validation_outputs/tableS2_persample_200successes.csv     (per-sample percentiles)
-  validation_outputs/tableS2_persimulation_200successes.csv (every successful simulation)
+Captures every successful simulation's FULL end-member -> observation
+contribution matrix (resumable per-sample cache), then writes:
 
-It re-runs the inversion capturing every successful simulation's fractional
-contribution for each of the 18 Table S2 (ion, end-member) cells, caching the
-raw per-simulation values per (scenario, sample) so a restart resumes.
+  validation_outputs/tableS2_summary_s200.csv        mean-of-median vs published (18 Table S2 cells)
+  validation_outputs/tableS2_persample_s200.csv      per-sample percentiles      (18 Table S2 cells)
+  validation_outputs/tableS2_persimulation_s200.csv  raw per simulation, long    (18 Table S2 cells)
+  validation_outputs/full_persimulation_s200.csv     raw per simulation, wide    (full 9x10 matrix)
 
-  python -m scripts.export_tableS2_raw --success 200       # run + cache
-  python -m scripts.export_tableS2_raw --write-only        # CSVs from cache
+  python -m scripts.export_tableS2_raw --success 200    # run + cache, then write
+  python -m scripts.export_tableS2_raw --write-only      # write CSVs from cache
 """
 import argparse
 import csv
@@ -27,11 +27,15 @@ from scripts.validate_groups import PUB, SCEN
 
 UE = "reference/data/MEANDIR_UserEntries.xlsx"
 RD = "reference/data/RiverDataSpreadsheet_Kemeny_etal_2023.xlsx"
-RAW = "/tmp/claude-0/-home-user-MEANDIR-python/feec57dc-e16b-557c-afd4-47f9242d36db/scratchpad/tableS2_raw_s200.json"
+RAW = "/tmp/claude-0/-home-user-MEANDIR-python/feec57dc-e16b-557c-afd4-47f9242d36db/scratchpad/tableS2_rawfull_s200.json"
 OUTDIR = "validation_outputs"
 DEGAS = {1: "none", 2: "<2.5x DIC", 3: "<25x DIC"}
-CELLS = [(ion, lab, em) for ion, lab, em, _pub in PUB]          # 18 cells, in order
-CELLKEY = [f"{ion}|{lab}" for ion, lab, _em in CELLS]
+
+# fixed observation order (ObsList) and the union of end-members (EMList0 of S2/S3)
+OBS = ["Ca", "Mg", "Na", "K", "Cl", "SO4", "DIC", "d34S", "d13C"]
+EMALL = ["prec", "carb", "slct_Ca", "slct_Mg", "slct_Na", "slct_K", "pyri",
+         "evap", "corg", "degas"]
+CELLS = [(ion, lab, em) for ion, lab, em, _pub in PUB]   # 18 Table S2 cells
 
 
 def river_names():
@@ -69,28 +73,33 @@ def run_sample(sc, sample, success, max_iter):
     ems = ctx["params"].EMList0
     sims = []
     for s in r.sample_results.get(sample, []):
-        row = []
-        for ion, _lab, em in CELLS:
-            if em in ems:   # degas is absent in scenario 1 -> None
-                row.append(round(float(s["fractions"][ion][ems.index(em)]) * 100, 4))
-            else:
-                row.append(None)
-        sims.append(row)
-    return sims
+        flat = []                                  # obs-major, em-minor
+        for o in OBS:
+            frac = s["fractions"][o]
+            for k in range(len(ems)):
+                flat.append(round(float(frac[k]) * 100, 4))
+        sims.append(flat)
+    return {"ems": ems, "sims": sims}
+
+
+def _cell(sim, ems, ion, em):
+    """contribution of `em` to `ion` for one flattened simulation, or None."""
+    if em not in ems:
+        return None
+    return sim[OBS.index(ion) * len(ems) + ems.index(em)]
 
 
 def run_and_cache(success, max_iter):
     main, slough, _ = classify()
-    samples = main + slough
     cache = load_raw()
     for sc in SCEN:
-        for s in samples:
+        for s in (main + slough):
             key = f"{sc}|{s}"
             if key in cache:
                 continue
             cache[key] = run_sample(sc, s, success, max_iter)
             save_raw(cache)
-            print(f"{key}: {len(cache[key])} sims", flush=True)
+            print(f"{key}: {len(cache[key]['sims'])} sims", flush=True)
     return cache
 
 
@@ -98,59 +107,61 @@ def write_csvs(success):
     cache = load_raw()
     main, slough, names = classify()
     group_of = {**{s: "Mainstem" for s in main}, **{s: "Slough" for s in slough}}
+    allsamples = main + slough
     os.makedirs(OUTDIR, exist_ok=True)
 
-    # (1) per-simulation (long)
-    p_sim = os.path.join(OUTDIR, f"tableS2_persimulation_s{success}.csv")
-    with open(p_sim, "w", newline="") as f:
+    def entry(sc, s):
+        e = cache.get(f"{sc}|{s}")
+        return (e["ems"], e["sims"]) if e else (None, [])
+
+    # (1) Table S2 18-cell: per-simulation (long)
+    with open(os.path.join(OUTDIR, f"tableS2_persimulation_s{success}.csv"), "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["scenario", "degassing_constraint", "group", "sample_index",
                     "river_name", "sim_index", "ion", "end_member", "contribution_pct"])
         for sc in SCEN:
-            for s in (main + slough):
-                sims = cache.get(f"{sc}|{s}", [])
-                for j, row in enumerate(sims):
-                    for ci, (ion, lab, _em) in enumerate(CELLS):
-                        if row[ci] is None:   # cell absent (degas in S1)
+            for s in allsamples:
+                ems, sims = entry(sc, s)
+                for j, sim in enumerate(sims):
+                    for ion, lab, em in CELLS:
+                        v = _cell(sim, ems, ion, em)
+                        if v is None:
                             continue
-                        w.writerow([f"S{sc}", DEGAS[sc], group_of[s], s, names[s],
-                                    j, ion, lab, row[ci]])
+                        w.writerow([f"S{sc}", DEGAS[sc], group_of[s], s, names[s], j, ion, lab, v])
 
-    # (2) per-sample (percentiles)
-    p_smp = os.path.join(OUTDIR, f"tableS2_persample_s{success}.csv")
-    with open(p_smp, "w", newline="") as f:
+    # (2) Table S2 18-cell: per-sample percentiles
+    with open(os.path.join(OUTDIR, f"tableS2_persample_s{success}.csv"), "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["scenario", "degassing_constraint", "group", "sample_index",
                     "river_name", "ion", "end_member", "n_successes",
                     "median_pct", "p05_pct", "p25_pct", "p75_pct", "p95_pct"])
         for sc in SCEN:
-            for s in (main + slough):
-                sims = cache.get(f"{sc}|{s}", [])
-                n = len(sims)
-                for ci, (ion, lab, _em) in enumerate(CELLS):
-                    col = np.array([r[ci] for r in sims if r[ci] is not None], float)
-                    if not col.size:   # cell absent (degas in S1)
+            for s in allsamples:
+                ems, sims = entry(sc, s)
+                for ion, lab, em in CELLS:
+                    col = np.array([_cell(sim, ems, ion, em) for sim in sims
+                                    if _cell(sim, ems, ion, em) is not None], float)
+                    if not col.size:
                         continue
-                    def q(p):
-                        return round(float(np.percentile(col, p)), 4)
-                    w.writerow([f"S{sc}", DEGAS[sc], group_of[s], s, names[s],
-                                ion, lab, n, round(float(np.median(col)), 4),
-                                q(5), q(25), q(75), q(95)])
+                    w.writerow([f"S{sc}", DEGAS[sc], group_of[s], s, names[s], ion, lab,
+                                len(sims), round(float(np.median(col)), 4),
+                                *[round(float(np.percentile(col, p)), 4) for p in (5, 25, 75, 95)]])
 
-    # (3) summary (mean-of-median per group)
-    groups = {"All samples": main + slough, "Mainstem": main, "Slough": slough}
+    # (3) Table S2 18-cell: summary (mean-of-median vs published)
+    groups = {"All samples": allsamples, "Mainstem": main, "Slough": slough}
     gk = {"All samples": "All", "Mainstem": "Main", "Slough": "Slough"}
-    p_sum = os.path.join(OUTDIR, f"tableS2_summary_s{success}.csv")
-    with open(p_sum, "w", newline="") as f:
+    with open(os.path.join(OUTDIR, f"tableS2_summary_s{success}.csv"), "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["group", "n_samples", "scenario", "degassing_constraint",
                     "ion", "end_member", "published_pct", "python_pct", "delta_pct"])
         for gname, gidx in groups.items():
             for sc in SCEN:
-                for ci, (ion, lab, _em) in enumerate(CELLS):
+                for ci, (ion, lab, em) in enumerate(CELLS):
                     permed = []
                     for s in gidx:
-                        col = [r[ci] for r in cache.get(f"{sc}|{s}", []) if r[ci] is not None]
+                        ems, sims = entry(sc, s)
+                        col = [_cell(sim, ems, ion, em) for sim in sims]
+                        col = [v for v in col if v is not None]
                         if col:
                             permed.append(np.median(col))
                     py = float(np.mean(permed)) if permed else float("nan")
@@ -159,8 +170,28 @@ def write_csvs(success):
                                 "" if t is None else t,
                                 "" if py != py else round(py, 2),
                                 "" if (t is None or py != py) else round(py - t, 2)])
-    for p in (p_sum, p_smp, p_sim):
-        print(f"wrote {p} ({sum(1 for _ in open(p)) - 1} rows)")
+
+    # (4) FULL 9x10 matrix: per-simulation (wide)
+    cols = [f"{o}.{e}" for o in OBS for e in EMALL]
+    with open(os.path.join(OUTDIR, f"full_persimulation_s{success}.csv"), "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["scenario", "degassing_constraint", "group", "sample_index",
+                    "river_name", "sim_index"] + cols)
+        for sc in SCEN:
+            for s in allsamples:
+                ems, sims = entry(sc, s)
+                for j, sim in enumerate(sims):
+                    vals = []
+                    for o in OBS:
+                        for e in EMALL:
+                            v = _cell(sim, ems, o, e)
+                            vals.append("" if v is None else v)
+                    w.writerow([f"S{sc}", DEGAS[sc], group_of[s], s, names[s], j] + vals)
+
+    for p in sorted(os.listdir(OUTDIR)):
+        if p.endswith(f"s{success}.csv"):
+            full = os.path.join(OUTDIR, p)
+            print(f"wrote {full} ({sum(1 for _ in open(full)) - 1} rows)")
 
 
 def main():
